@@ -67,7 +67,6 @@ jobs:
     name: Docker images
     runs-on: ubuntu-latest
     needs: [backend, frontend]
-    if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
 
@@ -78,13 +77,34 @@ jobs:
         run: echo "repo=${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
 
       - name: Login to GHCR
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Build-only on PRs so the images are validated without publishing.
+      - name: Build control plane (PR validation)
+        if: github.event_name != 'push' || github.ref != 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/Dockerfile.api
+          load: true
+          tags: ghcr.io/${{ steps.repo.outputs.repo }}:ci
+
+      - name: Build console (PR validation)
+        if: github.event_name != 'push' || github.ref != 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          context: frontend
+          load: true
+          tags: ghcr.io/${{ steps.repo.outputs.repo }}-console:ci
+
+      # Push to GHCR on every main push.
       - name: Build and push control plane
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -93,6 +113,7 @@ jobs:
           tags: ghcr.io/${{ steps.repo.outputs.repo }}:latest, ghcr.io/${{ steps.repo.outputs.repo }}:${{ github.sha }}
 
       - name: Build and push console
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v6
         with:
           context: frontend

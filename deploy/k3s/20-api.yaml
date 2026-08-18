@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: custodian-api
+  namespace: custodian
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: custodian-api
+  template:
+    metadata:
+      labels:
+        app: custodian-api
+    spec:
+      containers:
+        - name: api
+          image: ghcr.io/cococopi/custodian:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: CUSTODIAN_ADDR
+              value: ":8080"
+            - name: CUSTODIAN_PUBLIC_URL
+              value: "https://paas.example.com"
+            - name: CUSTODIAN_DATABASE_URL
+              value: "postgres://custodian:changeme@postgres:5432/custodian?sslmode=disable"
+            - name: CUSTODIAN_REDIS_ADDR
+              value: "redis:6379"
+            - name: CUSTODIAN_JWT_SECRET
+              valueFrom:
+                secretKeyRef: { name: custodian-secrets, key: jwt-secret }
+            - name: CUSTODIAN_ENGINE
+              value: "k3s"
+            - name: CUSTODIAN_DEPLOY_ROOT
+              value: "/data/deploy"
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits: { cpu: "500m", memory: "512Mi" }
+          readinessProbe:
+            httpGet: { path: /healthz, port: 8080 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: custodian-api
+  namespace: custodian
+spec:
+  selector:
+    app: custodian-api
+  ports:
+    - port: 8080
+      targetPort: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: custodian-api
+  namespace: custodian
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  rules:
+    - host: api.paas.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: custodian-api
+                port: { number: 8080 }
+  tls:
+    - hosts: [api.paas.example.com]
+      secretName: custodian-api-tls

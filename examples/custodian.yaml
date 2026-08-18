@@ -1,0 +1,62 @@
+# Example Custodian blueprint.
+#
+# Declare the entire app — services, build, autoscaling, domains and
+# persistence — in one file, then:
+#
+#   custodian apps create acme --blueprint custodian.yaml
+#   custodian deploy acme
+#
+# Deploys are reproducible: this file IS the infrastructure.
+
+apiVersion: custodian.dev/v1
+kind: Blueprint
+name: acme
+
+services:
+  - name: web
+    build:
+      type: dockerfile          # dockerfile | buildpacks | static
+      context: ./web
+      dockerfile: Dockerfile
+      buildArgs:
+        NODE_ENV: production
+    runtime:
+      replicas: 2
+      port: 3000
+      env:
+        - name: NODE_ENV
+          value: production
+        - name: DATABASE_URL
+          valueFrom: secret      # injected from the control plane secret store
+      resources:
+        cpu: "0.5"
+        memory: "512Mi"
+    healthCheck:
+      path: /healthz
+      interval: 10s
+      timeout: 3s
+    autoscaling:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 12
+      targetCPU: 70
+      targetMemory: 80
+    domains:
+      - acme.example.com
+    persistence:
+      - name: uploads
+        size: 20Gi
+        mountPath: /var/lib/uploads
+
+  - name: worker
+    build:
+      type: buildpacks          # Cloud Native Buildpacks, no Dockerfile needed
+    runtime:
+      replicas: 1
+      env:
+        - name: REDIS_URL
+          value: redis://redis:6379
+    autoscaling:
+      enabled: true
+      minReplicas: 0            # scale to zero when the queue is idle
+      maxReplicas: 8

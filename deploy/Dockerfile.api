@@ -1,0 +1,23 @@
+# syntax=docker/dockerfile:1
+
+# --- Build stage ---
+FROM golang:1.23-alpine AS build
+WORKDIR /src
+
+# Cache modules first.
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/custodian-api ./cmd/custodian-api && \
+    CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/custodian-worker ./cmd/custodian-worker
+
+# --- Runtime stage ---
+FROM alpine:3.20
+RUN apk add --no-cache ca-certificates docker-cli curl && \
+    addgroup -S custodian && adduser -S custodian -G custodian
+COPY --from=build /out/custodian-api /usr/local/bin/custodian-api
+COPY --from=build /out/custodian-worker /usr/local/bin/custodian-worker
+USER custodian
+EXPOSE 8080
+ENTRYPOINT ["/usr/local/bin/custodian-api"]

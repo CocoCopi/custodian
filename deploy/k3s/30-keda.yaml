@@ -1,0 +1,30 @@
+# KEDA enables event-driven autoscaling and scale-to-zero for deployed apps.
+#
+# Install KEDA first:
+#   helm repo add kedacore https://kedacore.github.io/charts
+#   helm install keda kedacore/keda --namespace keda --create-namespace
+#
+# The control plane renders a ScaledObject like the one below for every app
+# with `autoscaling.scaleToZero: true` in its blueprint.
+
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: example-app-scaler
+  namespace: custodian
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: example-app
+  minReplicaCount: 0
+  maxReplicaCount: 10
+  cooldownPeriod: 300
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: http://prometheus:9090
+        metricName: http_requests_total
+        query: sum(rate(http_requests_total{app="example-app"}[2m]))
+        threshold: "10"

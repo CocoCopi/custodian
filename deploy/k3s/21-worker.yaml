@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: custodian-worker
+  namespace: custodian
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: custodian-worker
+  template:
+    metadata:
+      labels:
+        app: custodian-worker
+    spec:
+      containers:
+        - name: worker
+          image: ghcr.io/cococopi/custodian:latest
+          command: ["/usr/local/bin/custodian-worker"]
+          env:
+            - name: CUSTODIAN_DATABASE_URL
+              value: "postgres://custodian:changeme@postgres:5432/custodian?sslmode=disable"
+            - name: CUSTODIAN_REDIS_ADDR
+              value: "redis:6379"
+            - name: CUSTODIAN_JWT_SECRET
+              valueFrom:
+                secretKeyRef: { name: custodian-secrets, key: jwt-secret }
+            - name: CUSTODIAN_ENGINE
+              value: "k3s"
+            - name: CUSTODIAN_DEPLOY_ROOT
+              value: "/data/deploy"
+          resources:
+            requests: { cpu: "250m", memory: "256Mi" }
+            limits: { cpu: "1", memory: "1Gi" }

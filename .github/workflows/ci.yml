@@ -21,7 +21,8 @@ jobs:
           cache: true
 
       - name: Lint
-        uses: golangci/golangci-lint-action@v6
+        # v7 is required for golangci-lint v2 support (v6 rejects v2 binaries).
+        uses: golangci/golangci-lint-action@v7
         with:
           # Pinned explicitly: the action's `latest` resolves to the v1 track
           # (v1.64.8), which rejects the v2 config format. .golangci.yml is a

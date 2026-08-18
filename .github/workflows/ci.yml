@@ -23,7 +23,10 @@ jobs:
       - name: Lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: latest
+          # Pinned explicitly: the action's `latest` resolves to the v1 track
+          # (v1.64.8), which rejects the v2 config format. .golangci.yml is a
+          # v2 config, so keep this in lockstep with the v2 release used.
+          version: v2.12.2
 
       - name: Vet
         run: go vet ./...

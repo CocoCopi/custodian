@@ -1,6 +1,6 @@
 module github.com/CocoCopi/custodian
 
-go 1.25
+go 1.25.0
 
 require (
 	github.com/coreos/go-oidc/v3 v3.11.0
@@ -11,7 +11,7 @@ require (
 	github.com/hibiken/asynq v0.24.1
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/spf13/cobra v1.8.1
-	golang.org/x/oauth2 v0.21.0
+	golang.org/x/oauth2 v0.36.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

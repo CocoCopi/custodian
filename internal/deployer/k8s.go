@@ -108,8 +108,8 @@ func deployment(bp *blueprint.Blueprint, svc blueprint.Service, registry string)
 			"template": map[string]any{
 				"metadata": map[string]any{"labels": map[string]string{appLabel: svc.Name}},
 				"spec": map[string]any{
-					"containers":    []any{container},
-					"volumes":       volumes,
+					"containers": []any{container},
+					"volumes":    volumes,
 				},
 			},
 		},
@@ -138,7 +138,7 @@ func hpa(svc blueprint.Service) []byte {
 		metrics = append(metrics, map[string]any{
 			"type": "Resource",
 			"resource": map[string]any{
-				"name": "cpu",
+				"name":   "cpu",
 				"target": map[string]any{"type": "Utilization", "averageUtilization": svc.Autoscale.TargetCPU},
 			},
 		})
@@ -147,7 +147,7 @@ func hpa(svc blueprint.Service) []byte {
 		metrics = append(metrics, map[string]any{
 			"type": "Resource",
 			"resource": map[string]any{
-				"name": "memory",
+				"name":   "memory",
 				"target": map[string]any{"type": "Utilization", "averageUtilization": svc.Autoscale.TargetMemory},
 			},
 		})
@@ -197,7 +197,7 @@ func ingress(bp *blueprint.Blueprint, svc blueprint.Service) []byte {
 			"namespace": namespaceName,
 			"labels":    map[string]string{appLabel: svc.Name, "custodian.dev/project": bp.Name},
 			"annotations": map[string]string{
-				"cert-manager.io/cluster-issuer": "letsencrypt-prod",
+				"cert-manager.io/cluster-issuer":                   "letsencrypt-prod",
 				"traefik.ingress.kubernetes.io/router.entrypoints": "websecure",
 			},
 		},
@@ -230,7 +230,7 @@ func pvc(bp *blueprint.Blueprint, svc blueprint.Service, v blueprint.Volume) []b
 
 func probe(path string, port int, interval, timeout string) map[string]any {
 	return map[string]any{
-		"httpGet":   map[string]any{"path": path, "port": port},
+		"httpGet":             map[string]any{"path": path, "port": port},
 		"initialDelaySeconds": 5,
 		"periodSeconds":       10,
 		"timeoutSeconds":      3,

@@ -114,8 +114,8 @@ func (s *Server) writeArtifacts(project string, svc *models.Service, spec *bluep
 	if spec == nil {
 		// Bare image deploys still get a compose manifest.
 		bp := &blueprint.Blueprint{Name: project, Services: []blueprint.Service{{
-			Name: svc.Name,
-			Build: blueprint.Build{Type: "dockerfile"},
+			Name:    svc.Name,
+			Build:   blueprint.Build{Type: "dockerfile"},
 			Runtime: blueprint.Runtime{Replicas: 1, Port: 8080},
 		}}}
 		spec = &bp.Services[0]
@@ -176,7 +176,7 @@ func (s *Server) streamLogs(c *gin.Context, serviceID, deploymentID string) {
 	if err != nil {
 		return
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	topic := serviceID
 	if topic == "" {

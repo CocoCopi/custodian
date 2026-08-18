@@ -41,7 +41,7 @@ var logsCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("connect: %w", err)
 		}
-		defer conn.Close()
+		defer func() { _ = conn.Close() }()
 		fmt.Println("streaming logs (Ctrl-C to stop)...")
 
 		for {
@@ -50,8 +50,8 @@ var logsCmd = &cobra.Command{
 				return nil // connection closed or interrupted
 			}
 			var entry struct {
-				Stream   string `json:"stream"`
-				Message  string `json:"message"`
+				Stream    string `json:"stream"`
+				Message   string `json:"message"`
 				Timestamp string `json:"timestamp"`
 			}
 			if err := json.Unmarshal(data, &entry); err == nil {

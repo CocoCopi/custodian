@@ -12,8 +12,8 @@ import (
 
 // Task types registered with the Asynq server.
 const (
-	TypeBuild   = "deploy:build"   // build image from repo
-	TypeApply   = "deploy:apply"   // apply rendered artifacts
+	TypeBuild    = "deploy:build"    // build image from repo
+	TypeApply    = "deploy:apply"    // apply rendered artifacts
 	TypeFinalize = "deploy:finalize" // mark deployment complete
 )
 

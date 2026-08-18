@@ -12,11 +12,11 @@ import (
 
 // Default values applied when fields are omitted.
 const (
-	DefaultReplicas = 1
+	DefaultReplicas    = 1
 	DefaultMinReplicas = 1
 	DefaultMaxReplicas = 10
-	DefaultTargetCPU = 70
-	DefaultBranch    = "main"
+	DefaultTargetCPU   = 70
+	DefaultBranch      = "main"
 )
 
 // Blueprint is the root document of a custodian.yaml file.
@@ -29,30 +29,30 @@ type Blueprint struct {
 
 // Service describes a single deployable unit.
 type Service struct {
-	Name       string     `yaml:"name" json:"name"`
-	Build      Build      `yaml:"build" json:"build"`
-	Runtime    Runtime    `yaml:"runtime" json:"runtime"`
-	Health     *Health    `yaml:"healthCheck,omitempty" json:"healthCheck,omitempty"`
-	Autoscale  *Autoscale `yaml:"autoscaling,omitempty" json:"autoscaling,omitempty"`
-	Domains    []string   `yaml:"domains,omitempty" json:"domains,omitempty"`
-	Persistence []Volume  `yaml:"persistence,omitempty" json:"persistence,omitempty"`
+	Name        string     `yaml:"name" json:"name"`
+	Build       Build      `yaml:"build" json:"build"`
+	Runtime     Runtime    `yaml:"runtime" json:"runtime"`
+	Health      *Health    `yaml:"healthCheck,omitempty" json:"healthCheck,omitempty"`
+	Autoscale   *Autoscale `yaml:"autoscaling,omitempty" json:"autoscaling,omitempty"`
+	Domains     []string   `yaml:"domains,omitempty" json:"domains,omitempty"`
+	Persistence []Volume   `yaml:"persistence,omitempty" json:"persistence,omitempty"`
 }
 
 // Build describes how the service image is produced.
 type Build struct {
-	Type       string `yaml:"type" json:"type"` // dockerfile | buildpacks | static
-	Dockerfile string `yaml:"dockerfile,omitempty" json:"dockerfile,omitempty"`
-	Context    string `yaml:"context,omitempty" json:"context,omitempty"`
-	Command    string `yaml:"command,omitempty" json:"command,omitempty"` // buildpacks start command / docker CMD
+	Type       string            `yaml:"type" json:"type"` // dockerfile | buildpacks | static
+	Dockerfile string            `yaml:"dockerfile,omitempty" json:"dockerfile,omitempty"`
+	Context    string            `yaml:"context,omitempty" json:"context,omitempty"`
+	Command    string            `yaml:"command,omitempty" json:"command,omitempty"` // buildpacks start command / docker CMD
 	BuildArgs  map[string]string `yaml:"buildArgs,omitempty" json:"buildArgs,omitempty"`
 }
 
 // Runtime holds environment, resources and replica configuration.
 type Runtime struct {
-	Replicas    int            `yaml:"replicas,omitempty" json:"replicas,omitempty"`
-	Env         []EnvVar       `yaml:"env,omitempty" json:"env,omitempty"`
-	Resources   Resources      `yaml:"resources,omitempty" json:"resources,omitempty"`
-	Port        int            `yaml:"port,omitempty" json:"port,omitempty"`
+	Replicas  int       `yaml:"replicas,omitempty" json:"replicas,omitempty"`
+	Env       []EnvVar  `yaml:"env,omitempty" json:"env,omitempty"`
+	Resources Resources `yaml:"resources,omitempty" json:"resources,omitempty"`
+	Port      int       `yaml:"port,omitempty" json:"port,omitempty"`
 }
 
 // EnvVar is either a literal value or a reference to a stored secret.
@@ -64,8 +64,8 @@ type EnvVar struct {
 
 // Resources describes CPU/memory requests and limits.
 type Resources struct {
-	CPU    string `yaml:"cpu,omitempty" json:"cpu,omitempty"`
-	Memory string `yaml:"memory,omitempty" json:"memory,omitempty"`
+	CPU           string `yaml:"cpu,omitempty" json:"cpu,omitempty"`
+	Memory        string `yaml:"memory,omitempty" json:"memory,omitempty"`
 	CPURequest    string `yaml:"cpuRequest,omitempty" json:"cpuRequest,omitempty"`
 	MemoryRequest string `yaml:"memoryRequest,omitempty" json:"memoryRequest,omitempty"`
 }
@@ -79,18 +79,18 @@ type Health struct {
 
 // Autoscale enables HPA/KEDA-driven horizontal scaling.
 type Autoscale struct {
-	Enabled     bool `yaml:"enabled" json:"enabled"`
-	MinReplicas int  `yaml:"minReplicas,omitempty" json:"minReplicas,omitempty"`
-	MaxReplicas int  `yaml:"maxReplicas,omitempty" json:"maxReplicas,omitempty"`
-	TargetCPU   int  `yaml:"targetCPU,omitempty" json:"targetCPU,omitempty"`
-	TargetMemory int `yaml:"targetMemory,omitempty" json:"targetMemory,omitempty"`
-	ScaleToZero bool `yaml:"scaleToZero,omitempty" json:"scaleToZero,omitempty"`
+	Enabled      bool `yaml:"enabled" json:"enabled"`
+	MinReplicas  int  `yaml:"minReplicas,omitempty" json:"minReplicas,omitempty"`
+	MaxReplicas  int  `yaml:"maxReplicas,omitempty" json:"maxReplicas,omitempty"`
+	TargetCPU    int  `yaml:"targetCPU,omitempty" json:"targetCPU,omitempty"`
+	TargetMemory int  `yaml:"targetMemory,omitempty" json:"targetMemory,omitempty"`
+	ScaleToZero  bool `yaml:"scaleToZero,omitempty" json:"scaleToZero,omitempty"`
 }
 
 // Volume requests persistent storage.
 type Volume struct {
-	Name     string `yaml:"name" json:"name"`
-	Size     string `yaml:"size" json:"size"`
+	Name      string `yaml:"name" json:"name"`
+	Size      string `yaml:"size" json:"size"`
 	MountPath string `yaml:"mountPath" json:"mountPath"`
 }
 

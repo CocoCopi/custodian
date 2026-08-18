@@ -10,10 +10,10 @@ import (
 // handleHealth reports liveness and dependency status.
 func (s *Server) handleHealth(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"status":   "ok",
-		"engine":   s.engine,
-		"version":  "0.1.0",
-		"oidc":     s.oidc.Enabled(),
+		"status":  "ok",
+		"engine":  s.engine,
+		"version": "0.1.0",
+		"oidc":    s.oidc.Enabled(),
 	})
 }
 

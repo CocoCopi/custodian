@@ -15,14 +15,14 @@ import (
 
 // Server wires together all dependencies and builds the HTTP router.
 type Server struct {
-	cfg     *config.Config
-	store   *store.Store
-	tokens  *auth.TokenService
-	oidc    *auth.OIDCProvider
-	queue   *jobs.Client
-	hub     *ws.Hub
-	engine  deployer.Engine
-	registry string
+	cfg        *config.Config
+	store      *store.Store
+	tokens     *auth.TokenService
+	oidc       *auth.OIDCProvider
+	queue      *jobs.Client
+	hub        *ws.Hub
+	engine     deployer.Engine
+	registry   string
 	deployRoot string
 }
 

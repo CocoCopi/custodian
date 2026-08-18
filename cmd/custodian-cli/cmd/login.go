@@ -46,7 +46,7 @@ var loginCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("verify token: %w", err)
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		if resp.StatusCode != http.StatusOK {
 			body, _ := io.ReadAll(resp.Body)
 			return fmt.Errorf("verification failed (%s): %s", resp.Status, strings.TrimSpace(string(body)))

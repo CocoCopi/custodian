@@ -55,7 +55,7 @@ func run() error {
 
 	// Background worker
 	queue := jobs.NewClient(cfg.RedisAddr, cfg.RedisPassword)
-	defer queue.Close()
+	defer func() { _ = queue.Close() }()
 
 	worker := jobs.NewWorker(st, hub, cfg.PublicURL, cfg.Engine, cfg.DeployRoot)
 	srv := asynq.NewServer(
@@ -98,8 +98,8 @@ func run() error {
 
 type asynqLogger struct{}
 
-func (asynqLogger) Debug(args ...any)                 { log.Println(append([]any{"[asynq:debug]"}, args...)...) }
-func (asynqLogger) Info(args ...any)                  { log.Println(append([]any{"[asynq:info]"}, args...)...) }
-func (asynqLogger) Warn(args ...any)                  { log.Println(append([]any{"[asynq:warn]"}, args...)...) }
-func (asynqLogger) Error(args ...any)                 { log.Println(append([]any{"[asynq:error]"}, args...)...) }
-func (asynqLogger) Fatal(args ...any)                 { log.Fatal(append([]any{"[asynq:fatal]"}, args...)...) }
+func (asynqLogger) Debug(args ...any) { log.Println(append([]any{"[asynq:debug]"}, args...)...) }
+func (asynqLogger) Info(args ...any)  { log.Println(append([]any{"[asynq:info]"}, args...)...) }
+func (asynqLogger) Warn(args ...any)  { log.Println(append([]any{"[asynq:warn]"}, args...)...) }
+func (asynqLogger) Error(args ...any) { log.Println(append([]any{"[asynq:error]"}, args...)...) }
+func (asynqLogger) Fatal(args ...any) { log.Fatal(append([]any{"[asynq:fatal]"}, args...)...) }

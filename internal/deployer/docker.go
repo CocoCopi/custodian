@@ -44,12 +44,12 @@ func renderCompose(bp *blueprint.Blueprint, registry string) (*Result, error) {
 				"dockerfile": svc.Build.Dockerfile,
 				"args":       svc.Build.BuildArgs,
 			},
-			"image":         imageRef(registry, bp.Name, svc.Name),
-			"restart":       "unless-stopped",
-			"environment":   env,
-			"labels":        labels,
-			"expose":        []int{svc.Runtime.Port},
-			"healthcheck":   healthCheck(svc),
+			"image":       imageRef(registry, bp.Name, svc.Name),
+			"restart":     "unless-stopped",
+			"environment": env,
+			"labels":      labels,
+			"expose":      []int{svc.Runtime.Port},
+			"healthcheck": healthCheck(svc),
 		}
 
 		if svc.Runtime.Replicas > 1 || (svc.Autoscale != nil && svc.Autoscale.Enabled) {

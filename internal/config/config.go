@@ -47,22 +47,22 @@ type Config struct {
 // present, otherwise an error is returned so the process fails fast.
 func Load() (*Config, error) {
 	cfg := &Config{
-		Addr:            getEnv("CUSTODIAN_ADDR", ":8080"),
-		PublicURL:       strings.TrimSuffix(getEnv("CUSTODIAN_PUBLIC_URL", "http://localhost:8080"), "/"),
-		ShutdownTimeout: getDuration("CUSTODIAN_SHUTDOWN_TIMEOUT", 15*time.Second),
-		DatabaseURL:     getEnv("CUSTODIAN_DATABASE_URL", "postgres://custodian:custodian@localhost:5432/custodian?sslmode=disable"),
-		RedisAddr:       getEnv("CUSTODIAN_REDIS_ADDR", "localhost:6379"),
-		RedisPassword:   os.Getenv("CUSTODIAN_REDIS_PASSWORD"),
-		OIDCIssuer:      os.Getenv("CUSTODIAN_OIDC_ISSUER"),
-		OIDCClientID:    os.Getenv("CUSTODIAN_OIDC_CLIENT_ID"),
+		Addr:             getEnv("CUSTODIAN_ADDR", ":8080"),
+		PublicURL:        strings.TrimSuffix(getEnv("CUSTODIAN_PUBLIC_URL", "http://localhost:8080"), "/"),
+		ShutdownTimeout:  getDuration("CUSTODIAN_SHUTDOWN_TIMEOUT", 15*time.Second),
+		DatabaseURL:      getEnv("CUSTODIAN_DATABASE_URL", "postgres://custodian:custodian@localhost:5432/custodian?sslmode=disable"),
+		RedisAddr:        getEnv("CUSTODIAN_REDIS_ADDR", "localhost:6379"),
+		RedisPassword:    os.Getenv("CUSTODIAN_REDIS_PASSWORD"),
+		OIDCIssuer:       os.Getenv("CUSTODIAN_OIDC_ISSUER"),
+		OIDCClientID:     os.Getenv("CUSTODIAN_OIDC_CLIENT_ID"),
 		OIDCClientSecret: os.Getenv("CUSTODIAN_OIDC_CLIENT_SECRET"),
 		OIDCRedirectURL:  getEnv("CUSTODIAN_OIDC_REDIRECT_URL", ""),
-		JWTSecret:       os.Getenv("CUSTODIAN_JWT_SECRET"),
-		TokenTTL:        getDuration("CUSTODIAN_TOKEN_TTL", 24*time.Hour),
-		Engine:          getEnv("CUSTODIAN_ENGINE", "compose"),
-		DeployRoot:      getEnv("CUSTODIAN_DEPLOY_ROOT", "./data/deploy"),
-		DataDir:         getEnv("CUSTODIAN_DATA_DIR", "./data"),
-		OTLPEndpoint:    os.Getenv("CUSTODIAN_OTLP_ENDPOINT"),
+		JWTSecret:        os.Getenv("CUSTODIAN_JWT_SECRET"),
+		TokenTTL:         getDuration("CUSTODIAN_TOKEN_TTL", 24*time.Hour),
+		Engine:           getEnv("CUSTODIAN_ENGINE", "compose"),
+		DeployRoot:       getEnv("CUSTODIAN_DEPLOY_ROOT", "./data/deploy"),
+		DataDir:          getEnv("CUSTODIAN_DATA_DIR", "./data"),
+		OTLPEndpoint:     os.Getenv("CUSTODIAN_OTLP_ENDPOINT"),
 	}
 
 	if cfg.DatabaseURL == "" {

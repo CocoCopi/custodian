@@ -90,9 +90,9 @@ func (s *Server) handleCreateToken(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{
-		"token":      t,
-		"plaintext":  prefix + "." + plaintext,
-		"note":       "store this value now; it will not be shown again",
+		"token":     t,
+		"plaintext": prefix + "." + plaintext,
+		"note":      "store this value now; it will not be shown again",
 	})
 }
 

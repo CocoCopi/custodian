@@ -62,7 +62,7 @@ var appsCreateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		if resp.StatusCode != http.StatusCreated {
 			return responseError(resp)
 		}
@@ -87,7 +87,7 @@ var appsListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		if resp.StatusCode != http.StatusOK {
 			return responseError(resp)
 		}
@@ -122,7 +122,7 @@ var appsGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		if resp.StatusCode != http.StatusOK {
 			return responseError(resp)
 		}
@@ -149,7 +149,7 @@ var appsDeleteCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		if resp.StatusCode != http.StatusNoContent {
 			return responseError(resp)
 		}

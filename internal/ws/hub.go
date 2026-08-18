@@ -10,8 +10,8 @@ import (
 
 // Hub fans log lines out to subscribers keyed by service and deployment id.
 type Hub struct {
-	mu      sync.RWMutex
-	subs    map[string]map[chan models.LogEntry]struct{}
+	mu   sync.RWMutex
+	subs map[string]map[chan models.LogEntry]struct{}
 }
 
 // NewHub returns an empty hub.

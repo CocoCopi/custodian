@@ -33,24 +33,24 @@ type Service struct {
 
 // Deployment represents a single deploy attempt for a Service.
 type Deployment struct {
-	ID        string        `json:"id"`
-	ServiceID string        `json:"service_id"`
-	CommitSHA string        `json:"commit_sha,omitempty"`
-	Status    ServiceStatus `json:"status"` // reuses lifecycle states
-	Image     string        `json:"image,omitempty"`
-	Logs      string        `json:"logs,omitempty"`
-	CreatedAt time.Time     `json:"created_at"`
-	FinishedAt *time.Time   `json:"finished_at,omitempty"`
+	ID         string        `json:"id"`
+	ServiceID  string        `json:"service_id"`
+	CommitSHA  string        `json:"commit_sha,omitempty"`
+	Status     ServiceStatus `json:"status"` // reuses lifecycle states
+	Image      string        `json:"image,omitempty"`
+	Logs       string        `json:"logs,omitempty"`
+	CreatedAt  time.Time     `json:"created_at"`
+	FinishedAt *time.Time    `json:"finished_at,omitempty"`
 }
 
 // APIToken is a long-lived credential used by the CLI and CI systems.
 type APIToken struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	OwnerID   string    `json:"owner_id"`
-	TokenHash string    `json:"-"`
-	Prefix    string    `json:"prefix"`
-	CreatedAt time.Time `json:"created_at"`
+	ID         string     `json:"id"`
+	Name       string     `json:"name"`
+	OwnerID    string     `json:"owner_id"`
+	TokenHash  string     `json:"-"`
+	Prefix     string     `json:"prefix"`
+	CreatedAt  time.Time  `json:"created_at"`
 	LastUsedAt *time.Time `json:"last_used_at,omitempty"`
 }
 

@@ -24,10 +24,10 @@ type Store interface {
 
 // Worker executes queued build/apply tasks.
 type Worker struct {
-	store    Store
-	logs     Logger
-	registry string
-	engine   string
+	store      Store
+	logs       Logger
+	registry   string
+	engine     string
 	deployRoot string
 }
 

@@ -32,7 +32,7 @@ var tokensCreateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		if resp.StatusCode != http.StatusCreated {
 			return responseError(resp)
 		}
@@ -60,7 +60,7 @@ var tokensListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		if resp.StatusCode != http.StatusOK {
 			return responseError(resp)
 		}
@@ -95,7 +95,7 @@ var tokensDeleteCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		if resp.StatusCode != http.StatusNoContent {
 			return responseError(resp)
 		}

@@ -1,7 +1,8 @@
 # syntax=docker/dockerfile:1
 
 # --- Build stage ---
-FROM golang:1.23-alpine AS build
+# Must match the `go` directive in go.mod (go 1.25).
+FROM golang:1.25-alpine AS build
 WORKDIR /src
 
 # Cache modules first.

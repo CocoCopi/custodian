@@ -4,6 +4,8 @@ import { AppDetailPage } from "./pages/AppDetailPage";
 import { AppsPage, NewAppPage } from "./pages/AppsPage";
 import { Dashboard } from "./pages/Dashboard";
 import { LoginPage } from "./pages/LoginPage";
+import { SystemHealthPage } from "./pages/SystemHealthPage";
+import { TokensPage } from "./pages/TokensPage";
 import { useAuthStore } from "./store/auth";
 
 function Guard({ children }: { children: React.ReactNode }) {
@@ -28,6 +30,8 @@ export default function App() {
           <Route path="/apps" element={<AppsPage />} />
           <Route path="/apps/new" element={<NewAppPage />} />
           <Route path="/apps/:id" element={<AppDetailPage />} />
+          <Route path="/tokens" element={<TokensPage />} />
+          <Route path="/health" element={<SystemHealthPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

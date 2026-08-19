@@ -3,6 +3,9 @@ package api
 
 import (
 	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/CocoCopi/custodian/internal/auth"
 	"github.com/CocoCopi/custodian/internal/config"
@@ -57,8 +60,11 @@ func (s *Server) Router() *gin.Engine {
 	})
 
 	r.GET("/healthz", s.handleHealth)
+	r.GET("/api/v1/auth/setup-status", s.handleSetupStatus)
+	r.POST("/api/v1/auth/register", s.handleRegister)
 	r.GET("/api/v1/auth/login", s.handleLogin)
 	r.GET("/api/v1/auth/callback", s.handleCallback)
+	r.POST("/api/v1/auth/local", s.handleLocalLogin)
 
 	v1 := r.Group("/api/v1")
 	v1.Use(mw.RequireAuth())
@@ -68,6 +74,7 @@ func (s *Server) Router() *gin.Engine {
 		v1.GET("/services", s.handleListServices)
 		v1.POST("/services", s.handleCreateService)
 		v1.GET("/services/:id", s.handleGetService)
+		v1.PUT("/services/:id", s.handleUpdateService)
 		v1.DELETE("/services/:id", s.handleDeleteService)
 		v1.GET("/services/:id/deployments", s.handleListDeployments)
 		v1.POST("/services/:id/deployments", s.handleCreateDeployment)
@@ -78,6 +85,21 @@ func (s *Server) Router() *gin.Engine {
 		v1.GET("/tokens", s.handleListTokens)
 		v1.POST("/tokens", s.handleCreateToken)
 		v1.DELETE("/tokens/:id", s.handleDeleteToken)
+	}
+
+	// Serve built static Web UI files when present on disk for local server hosting
+	staticDir := s.cfg.StaticDir
+	if staticDir != "" {
+		if info, err := os.Stat(staticDir); err == nil && info.IsDir() {
+			r.Static("/assets", filepath.Join(staticDir, "assets"))
+			r.NoRoute(func(c *gin.Context) {
+				if !strings.HasPrefix(c.Request.URL.Path, "/api") && !strings.HasPrefix(c.Request.URL.Path, "/healthz") {
+					c.File(filepath.Join(staticDir, "index.html"))
+					return
+				}
+				c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+			})
+		}
 	}
 
 	return r

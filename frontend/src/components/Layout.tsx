@@ -1,10 +1,12 @@
-import { Boxes, LayoutDashboard, LogOut, ShieldCheck } from "lucide-react";
+import { Activity, Boxes, Key, LayoutDashboard, LogOut, ShieldCheck } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/auth";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/apps", label: "Applications", icon: Boxes },
+  { to: "/tokens", label: "API Tokens", icon: Key },
+  { to: "/health", label: "System Health", icon: Activity },
 ];
 
 export function Layout() {

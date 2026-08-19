@@ -31,6 +31,8 @@ type Config struct {
 	OIDCRedirectURL  string
 	JWTSecret        string
 	TokenTTL         time.Duration
+	AdminUser        string
+	AdminPassword    string
 
 	// Deployment engine
 	Engine string // "compose" (default) or "k3s"
@@ -38,6 +40,7 @@ type Config struct {
 	// Runtime paths
 	DeployRoot string
 	DataDir    string
+	StaticDir  string
 
 	// Observability
 	OTLPEndpoint string
@@ -59,9 +62,12 @@ func Load() (*Config, error) {
 		OIDCRedirectURL:  getEnv("CUSTODIAN_OIDC_REDIRECT_URL", ""),
 		JWTSecret:        os.Getenv("CUSTODIAN_JWT_SECRET"),
 		TokenTTL:         getDuration("CUSTODIAN_TOKEN_TTL", 24*time.Hour),
+		AdminUser:        getEnv("CUSTODIAN_ADMIN_USER", "admin"),
+		AdminPassword:    getEnv("CUSTODIAN_ADMIN_PASSWORD", "custodian"),
 		Engine:           getEnv("CUSTODIAN_ENGINE", "compose"),
 		DeployRoot:       getEnv("CUSTODIAN_DEPLOY_ROOT", "./data/deploy"),
 		DataDir:          getEnv("CUSTODIAN_DATA_DIR", "./data"),
+		StaticDir:        getEnv("CUSTODIAN_STATIC_DIR", "./frontend/dist"),
 		OTLPEndpoint:     os.Getenv("CUSTODIAN_OTLP_ENDPOINT"),
 	}
 

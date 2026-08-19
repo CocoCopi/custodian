@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🛡️ Custodian
+# Custodian
 
 **The self-hosted PaaS that gives you full ownership.**
 
@@ -92,7 +92,22 @@ Two deployment profiles, one control plane:
 
 ## Quickstart
 
-### 1. Start the control plane
+### 1. One-Liner Server Installation
+
+Run this single command on any fresh or existing Linux server (Ubuntu, Debian, CentOS, AlmaLinux, Fedora, Arch) to automatically fetch the repository, install Docker, generate security keys, configure systemd autostart, and launch Custodian:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/CocoCopi/custodian/main/deploy/install.sh | sudo bash
+```
+
+> **What this command automatically does:**
+> 1. **Fetches Repository**: Clones the Custodian repository into `/opt/custodian` (with a tarball download fallback).
+> 2. **Installs Dependencies**: Installs `curl`, `git`, `openssl`, Docker Engine, and `docker-compose-plugin`.
+> 3. **Generates Security Credentials**: Creates `deploy/.env` with 256-bit random JWT signing keys, database passwords, and auto-detects your server's public IP address.
+> 4. **Configures Autostart**: Installs and enables `/etc/systemd/system/custodian.service` so Custodian and all deployed containers automatically start whenever your server reboots (`systemctl enable custodian.service`).
+> 5. **Launches Control Plane**: Builds and starts the container stack (`docker compose up -d --build`).
+
+*Or for manual setup:*
 
 ```bash
 git clone https://github.com/CocoCopi/custodian.git
@@ -101,8 +116,11 @@ cp deploy/.env.example deploy/.env   # set CUSTODIAN_JWT_SECRET and a domain
 make up                              # docker compose -f deploy/docker-compose.yml up -d
 ```
 
-The console is now at `https://<your-domain>`, the API at
-`https://api.<your-domain>`, and Grafana at `https://grafana.<your-domain>`.
+Once installed, your control plane services are live:
+- **Web Console**: `http://<your-server-ip>`
+- **API Endpoint**: `http://<your-server-ip>:8080`
+- **Grafana Metrics**: `http://<your-server-ip>:3000`
+- **MinIO S3 Console**: `http://<your-server-ip>:9001`
 
 ### 2. Create a token and log in
 

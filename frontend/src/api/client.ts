@@ -1,4 +1,4 @@
-import type { Deployment, Service } from "./types";
+import type { APIToken, CreateTokenResponse, Deployment, Service } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
@@ -40,6 +40,17 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 export const api = {
   me: () => request<{ owner_id: string }>("/api/v1/me"),
+  getSetupStatus: () => request<{ setup_required: boolean }>("/api/v1/auth/setup-status"),
+  registerUser: (username: string, password: string, email?: string) =>
+    request<{ token: string; user: string }>("/api/v1/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ username, password, email }),
+    }),
+  localLogin: (username: string, password: string) =>
+    request<{ token: string; user: string }>("/api/v1/auth/local", {
+      method: "POST",
+      body: JSON.stringify({ username, password }),
+    }),
 
   listServices: () => request<{ services: Service[] }>("/api/v1/services"),
   createService: (body: {
@@ -54,6 +65,20 @@ export const api = {
       body: JSON.stringify(body),
     }),
   getService: (id: string) => request<Service>(`/api/v1/services/${id}`),
+  updateService: (
+    id: string,
+    body: {
+      repo_url?: string;
+      branch?: string;
+      build_type?: string;
+      image?: string;
+      blueprint?: string;
+    },
+  ) =>
+    request<Service>(`/api/v1/services/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
   deleteService: (id: string) =>
     request<void>(`/api/v1/services/${id}`, { method: "DELETE" }),
 
@@ -64,4 +89,13 @@ export const api = {
       `/api/v1/services/${serviceId}/deployments${commit ? `?commit=${commit}` : ""}`,
       { method: "POST" },
     ),
+
+  listTokens: () => request<{ tokens: APIToken[] }>("/api/v1/tokens"),
+  createToken: (name: string) =>
+    request<CreateTokenResponse>("/api/v1/tokens", {
+      method: "POST",
+      body: JSON.stringify({ name }),
+    }),
+  deleteToken: (id: string) =>
+    request<void>(`/api/v1/tokens/${id}`, { method: "DELETE" }),
 };

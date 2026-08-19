@@ -8,6 +8,7 @@ import (
 	"github.com/CocoCopi/custodian/internal/auth"
 	"github.com/CocoCopi/custodian/internal/models"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func randomState() (string, error) {
@@ -18,44 +19,102 @@ func randomState() (string, error) {
 	return base64.RawURLEncoding.EncodeToString(b), nil
 }
 
-// handleLogin redirects to the OIDC provider to start the auth code flow.
-func (s *Server) handleLogin(c *gin.Context) {
-	if !s.oidc.Enabled() {
-		c.JSON(http.StatusNotImplemented, gin.H{"error": "OIDC is not configured on this instance"})
-		return
-	}
-	state, err := randomState()
+// handleSetupStatus checks if any user accounts exist in the control plane.
+func (s *Server) handleSetupStatus(c *gin.Context) {
+	count, err := s.store.CountUsers(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate state"})
+		c.JSON(http.StatusOK, gin.H{"setup_required": false})
 		return
 	}
-	c.SetCookie("custodian_oauth_state", state, 600, "/", "", false, true)
-	c.Redirect(http.StatusFound, s.oidc.AuthCodeURL(state))
+	c.JSON(http.StatusOK, gin.H{"setup_required": count == 0})
 }
 
-// handleCallback completes the OIDC exchange and issues a session JWT.
-func (s *Server) handleCallback(c *gin.Context) {
-	if !s.oidc.Enabled() {
-		c.JSON(http.StatusNotImplemented, gin.H{"error": "OIDC is not configured on this instance"})
+type registerRequest struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+	Email    string `json:"email"`
+}
+
+// handleRegister provisions a local user account.
+func (s *Server) handleRegister(c *gin.Context) {
+	var req registerRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "username and password are required"})
 		return
 	}
-	state, err := c.Cookie("custodian_oauth_state")
-	if err != nil || state == "" || state != c.Query("state") {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid OAuth state"})
+
+	if len(req.Password) < 6 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "password must be at least 6 characters long"})
 		return
 	}
-	subject, name, email, err := s.oidc.Exchange(c.Request.Context(), c.Query("code"))
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to hash password"})
 		return
 	}
-	jwtToken, err := s.tokens.IssueSessionToken(subject, name, email)
+
+	user := &models.User{
+		Username:     req.Username,
+		Email:        req.Email,
+		PasswordHash: string(hash),
+	}
+
+	if err := s.store.CreateUser(c.Request.Context(), user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "username already exists or invalid"})
+		return
+	}
+
+	jwtToken, err := s.tokens.IssueSessionToken(user.ID, user.Username, user.Email)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not issue session"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not issue session token"})
 		return
 	}
+
 	c.SetCookie("custodian_session", jwtToken, int(s.cfg.TokenTTL.Seconds()), "/", "", false, true)
-	c.JSON(http.StatusOK, gin.H{"token": jwtToken})
+	c.JSON(http.StatusCreated, gin.H{"token": jwtToken, "user": user.Username})
+}
+
+type localLoginRequest struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+// handleLocalLogin authenticates local user account credentials.
+func (s *Server) handleLocalLogin(c *gin.Context) {
+	var req localLoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "username and password are required"})
+		return
+	}
+
+	// 1. Check registered database users
+	if user, err := s.store.GetUserByUsername(c.Request.Context(), req.Username); err == nil && user != nil {
+		if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)) == nil {
+			jwtToken, err := s.tokens.IssueSessionToken(user.ID, user.Username, user.Email)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not issue session token"})
+				return
+			}
+			c.SetCookie("custodian_session", jwtToken, int(s.cfg.TokenTTL.Seconds()), "/", "", false, true)
+			c.JSON(http.StatusOK, gin.H{"token": jwtToken, "user": user.Username})
+			return
+		}
+	}
+
+	// 2. Fallback check for config admin user
+	if req.Username == s.cfg.AdminUser && req.Password == s.cfg.AdminPassword {
+		jwtToken, err := s.tokens.IssueSessionToken(req.Username, req.Username, req.Username+"@localhost")
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not issue session token"})
+			return
+		}
+		c.SetCookie("custodian_session", jwtToken, int(s.cfg.TokenTTL.Seconds()), "/", "", false, true)
+		c.JSON(http.StatusOK, gin.H{"token": jwtToken, "user": req.Username})
+		return
+	}
+
+	c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid username or password"})
 }
 
 // handleListTokens returns the caller's API tokens (without hashes).

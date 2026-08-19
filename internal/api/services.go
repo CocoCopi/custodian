@@ -92,3 +92,52 @@ func (s *Server) handleDeleteService(c *gin.Context) {
 	}
 	c.Status(http.StatusNoContent)
 }
+
+type updateServiceRequest struct {
+	RepoURL   string `json:"repo_url"`
+	Branch    string `json:"branch"`
+	BuildType string `json:"build_type"`
+	Image     string `json:"image"`
+	Blueprint string `json:"blueprint"`
+}
+
+// handleUpdateService updates an existing service's configuration or blueprint.
+func (s *Server) handleUpdateService(c *gin.Context) {
+	svc, err := s.store.GetService(c.Request.Context(), c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "service not found"})
+		return
+	}
+
+	var req updateServiceRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payload: " + err.Error()})
+		return
+	}
+
+	if req.Blueprint != "" {
+		if _, err := blueprint.Parse([]byte(req.Blueprint)); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid blueprint: " + err.Error()})
+			return
+		}
+		svc.Blueprint = req.Blueprint
+	}
+	if req.RepoURL != "" {
+		svc.RepoURL = req.RepoURL
+	}
+	if req.Branch != "" {
+		svc.Branch = req.Branch
+	}
+	if req.BuildType != "" {
+		svc.BuildType = req.BuildType
+	}
+	if req.Image != "" {
+		svc.Image = req.Image
+	}
+
+	if err := s.store.UpdateService(c.Request.Context(), svc); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, svc)
+}

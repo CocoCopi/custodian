@@ -14,6 +14,7 @@ export interface Service {
   branch: string;
   build_type: "dockerfile" | "buildpacks" | "static";
   image?: string;
+  blueprint?: string;
   status: ServiceStatus;
   created_at: string;
   updated_at: string;
@@ -36,4 +37,17 @@ export interface LogEntry {
   stream: "stdout" | "stderr";
   message: string;
   timestamp: string;
+}
+
+export interface APIToken {
+  id: string;
+  name: string;
+  owner_id: string;
+  prefix: string;
+  created_at: string;
+  last_used_at?: string | null;
+}
+
+export interface CreateTokenResponse extends APIToken {
+  token: string;
 }

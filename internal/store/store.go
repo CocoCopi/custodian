@@ -114,6 +114,14 @@ func (s *Store) UpdateServiceStatus(ctx context.Context, id string, status model
 	return err
 }
 
+// UpdateService updates editable service attributes.
+func (s *Store) UpdateService(ctx context.Context, svc *models.Service) error {
+	_, err := s.pool.Exec(ctx, `
+		UPDATE services SET repo_url = $2, branch = $3, build_type = $4, image = $5, blueprint = $6, updated_at = now()
+		WHERE id = $1`, svc.ID, svc.RepoURL, svc.Branch, svc.BuildType, svc.Image, svc.Blueprint)
+	return err
+}
+
 // DeleteService removes a service and cascades to deployments.
 func (s *Store) DeleteService(ctx context.Context, id string) error {
 	_, err := s.pool.Exec(ctx, `DELETE FROM services WHERE id = $1`, id)
@@ -232,4 +240,38 @@ func (s *Store) DeleteAPIToken(ctx context.Context, id string) error {
 func (s *Store) TouchAPIToken(ctx context.Context, id string) error {
 	_, err := s.pool.Exec(ctx, `UPDATE api_tokens SET last_used_at = now() WHERE id = $1`, id)
 	return err
+}
+
+// ---- Users ----
+
+// CountUsers returns the total count of registered users.
+func (s *Store) CountUsers(ctx context.Context) (int, error) {
+	var count int
+	err := s.pool.QueryRow(ctx, `SELECT count(*) FROM users`).Scan(&count)
+	return count, err
+}
+
+// CreateUser inserts a new user record.
+func (s *Store) CreateUser(ctx context.Context, u *models.User) error {
+	u.ID = uuid.NewString()
+	u.CreatedAt = time.Now().UTC()
+	u.UpdatedAt = u.CreatedAt
+	_, err := s.pool.Exec(ctx, `
+		INSERT INTO users (id, username, password_hash, email, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6)`,
+		u.ID, u.Username, u.PasswordHash, u.Email, u.CreatedAt, u.UpdatedAt)
+	return err
+}
+
+// GetUserByUsername fetches a user by their username.
+func (s *Store) GetUserByUsername(ctx context.Context, username string) (*models.User, error) {
+	var u models.User
+	err := s.pool.QueryRow(ctx, `
+		SELECT id, username, password_hash, email, created_at, updated_at
+		FROM users WHERE LOWER(username) = LOWER($1)`, username).
+		Scan(&u.ID, &u.Username, &u.PasswordHash, &u.Email, &u.CreatedAt, &u.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return &u, nil
 }

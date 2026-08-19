@@ -6,7 +6,17 @@ or multi-node resilience.
 
 ## Profile 1 — Single server (`compose`)
 
-Minimum: a VPS with 2 vCPU / 4 GB RAM, Docker 24+ and a domain pointing at it.
+Minimum: a VPS with 2 vCPU / 4 GB RAM running Linux (Ubuntu, Debian, CentOS, Fedora, Arch).
+
+### Automated One-Liner Setup (Recommended)
+
+Run this single command on your server to automatically install Docker, set up dependencies, configure secrets, create a systemd autostart service, and launch the control plane:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/CocoCopi/custodian/main/deploy/install.sh | sudo bash
+```
+
+### Manual Setup
 
 ```bash
 git clone https://github.com/CocoCopi/custodian.git

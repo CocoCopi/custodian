@@ -30,8 +30,14 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-# 2. Detect Server IP address
-SERVER_IP=$(curl -s --max-time 5 https://api.ipify.org || hostname -I | awk '{print $1}' || echo "localhost")
+# 2. Detect Server IP address safely
+SERVER_IP=$(curl -s --max-time 5 https://api.ipify.org 2>/dev/null | tr -d '\r\n' | awk '{print $1}')
+if [ -z "${SERVER_IP}" ]; then
+  SERVER_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
+fi
+if [ -z "${SERVER_IP}" ]; then
+  SERVER_IP="localhost"
+fi
 log_info "Detected server public IP: ${BOLD}${SERVER_IP}${NC}"
 
 # 3. Check and install prerequisite packages (curl, git, openssl)
@@ -122,25 +128,39 @@ ENV_FILE="${INSTALL_DIR}/deploy/.env"
 
 if [ ! -f "${ENV_FILE}" ]; then
   log_info "Generating deployment .env configuration with security tokens..."
-  cp "${INSTALL_DIR}/deploy/.env.example" "${ENV_FILE}"
 
   JWT_SECRET=$(openssl rand -hex 32)
   DB_PASS=$(openssl rand -hex 16)
   MINIO_PASS=$(openssl rand -hex 16)
+  GRAFANA_PASS=$(openssl rand -hex 16)
 
   # Conflict-free port resolution
   API_PORT=$(find_free_port 8080)
   HTTP_PORT=$(find_free_port 80)
   HTTPS_PORT=$(find_free_port 443)
 
-  sed -i "s/CUSTODIAN_JWT_SECRET=.*/CUSTODIAN_JWT_SECRET=${JWT_SECRET}/" "${ENV_FILE}"
-  sed -i "s/CUSTODIAN_DB_PASSWORD=.*/CUSTODIAN_DB_PASSWORD=${DB_PASS}/" "${ENV_FILE}"
-  sed -i "s/CUSTODIAN_MINIO_PASSWORD=.*/CUSTODIAN_MINIO_PASSWORD=${MINIO_PASS}/" "${ENV_FILE}"
-  sed -i "s/CUSTODIAN_DOMAIN=.*/CUSTODIAN_DOMAIN=${SERVER_IP}/" "${ENV_FILE}"
+  cat <<EOF > "${ENV_FILE}"
+CUSTODIAN_DOMAIN=${SERVER_IP}
 
-  sed -i "s/CUSTODIAN_PORT=.*/CUSTODIAN_PORT=${API_PORT}/" "${ENV_FILE}"
-  sed -i "s/CUSTODIAN_HTTP_PORT=.*/CUSTODIAN_HTTP_PORT=${HTTP_PORT}/" "${ENV_FILE}"
-  sed -i "s/CUSTODIAN_HTTPS_PORT=.*/CUSTODIAN_HTTPS_PORT=${HTTPS_PORT}/" "${ENV_FILE}"
+CUSTODIAN_PORT=${API_PORT}
+CUSTODIAN_HTTP_PORT=${HTTP_PORT}
+CUSTODIAN_HTTPS_PORT=${HTTPS_PORT}
+
+CUSTODIAN_JWT_SECRET=${JWT_SECRET}
+
+CUSTODIAN_DB_USER=custodian
+CUSTODIAN_DB_PASSWORD=${DB_PASS}
+CUSTODIAN_DB_NAME=custodian
+
+CUSTODIAN_MINIO_USER=custodian
+CUSTODIAN_MINIO_PASSWORD=${MINIO_PASS}
+
+CUSTODIAN_GRAFANA_USER=admin
+CUSTODIAN_GRAFANA_PASSWORD=${GRAFANA_PASS}
+
+CUSTODIAN_LETSENCRYPT_EMAIL=admin@example.com
+CUSTODIAN_ENGINE=compose
+EOF
 
   log_success "Created deploy/.env (API Port: ${API_PORT}, Web Port: ${HTTP_PORT})."
 else

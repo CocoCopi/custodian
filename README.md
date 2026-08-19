@@ -122,7 +122,15 @@ Once installed, your control plane services are live:
 - **Grafana Metrics**: `http://<your-server-ip>:3000`
 - **MinIO S3 Console**: `http://<your-server-ip>:9001`
 
-### 2. Create a token and log in
+### 2. Uninstallation
+
+To completely remove Custodian, stop all containers, delete systemd service units, and purge installed files from your server:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/CocoCopi/custodian/main/deploy/uninstall.sh | sudo bash
+```
+
+### 3. Create a token and log in
 
 ```bash
 # From the control plane host (bootstraps the first token via the API):

@@ -87,7 +87,7 @@ jobs:
       # Build-only on PRs so the images are validated without publishing.
       - name: Build control plane (PR validation)
         if: github.event_name != 'push' || github.ref != 'refs/heads/main'
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: deploy/Dockerfile.api
@@ -96,7 +96,7 @@ jobs:
 
       - name: Build console (PR validation)
         if: github.event_name != 'push' || github.ref != 'refs/heads/main'
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: frontend
           load: true
@@ -105,7 +105,7 @@ jobs:
       # Push to GHCR on every main push.
       - name: Build and push control plane
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: deploy/Dockerfile.api
@@ -114,7 +114,7 @@ jobs:
 
       - name: Build and push console
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: frontend
           push: true
